@@ -34,7 +34,7 @@ force.ultrametric<-function(tree, method=c("nnls","extend")){
   tree
 }
 
-mcmcglmm_dignostics<-function (modelo_fix, modelo_random, database, gelman_diag="True", nitt_x= 13000, thin_x= 10 , 
+mcmcglmm_dignostics<-function (modelo_fix, modelo_random, database, mev_col, gelman_diag="True", nitt_x= 13000, thin_x= 10 , 
                                burnin_x= 3000, prior_x, save_output = "False", saving_path, file_name ){
   # Function to run one or several models 
   # gelman_diag == False will run only one model that will return the standar output of MCMCglmm 
@@ -48,7 +48,7 @@ mcmcglmm_dignostics<-function (modelo_fix, modelo_random, database, gelman_diag=
   # Running just one model 
   if (gelman_diag == "False"){
     m0.1<-MCMCglmm (as.formula(modelo_fix), random= as.formula (modelo_random), family = "gaussian", 
-                    data = database, verbose= T, mev = database$mev,
+                    data = database, verbose= T, mev = database[,mev_col],
                     nitt=nitt_x, thin=thin_x, burnin= burnin_x,pr=T,prior=prior_x)
     # to save data in .RData
     if (save_output == "True"){
@@ -62,15 +62,15 @@ mcmcglmm_dignostics<-function (modelo_fix, modelo_random, database, gelman_diag=
     # Running multiple models for gelman diagnostic
   } else {
     m0.1<-MCMCglmm (as.formula(modelo_fix), random= as.formula (modelo_random), family = "gaussian", 
-                    data = database, verbose= T, mev = database$mev,
+                    data = database, verbose= T, mev = database[,mev_col],
                     nitt=nitt_x, thin=thin_x, burnin= burnin_x,pr=T,prior=prior_x)
     
     m0.2<-MCMCglmm (as.formula(modelo_fix), random= as.formula (modelo_random), family = "gaussian", 
-                    data = database, verbose= T, mev = database$mev,
+                    data = database, verbose= T, mev = database[,mev_col],
                     nitt=nitt_x, thin=thin_x, burnin= burnin_x,pr=T,prior=prior_x)
     
     m0.3<-MCMCglmm (as.formula(modelo_fix), random= as.formula (modelo_random), family = "gaussian", 
-                    data = database, verbose= T, mev = database$mev,
+                    data = database, verbose= T, mev = database[,mev_col],
                     nitt=nitt_x, thin=thin_x, burnin= burnin_x,pr=T,prior=prior_x)
     
     gel.diag_SOL<-gelman.diag(list(m0.1$Sol[,1],m0.2$Sol[,1],m0.3$Sol[,1]))
