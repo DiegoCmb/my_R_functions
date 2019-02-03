@@ -9,8 +9,7 @@ weighting_and_subsetting<-function (database, weight_approach='inverse_sample_si
   database<-subset(database, database$sample_size != 'NA') # because we want to weight by sample sizes
   # we will have to remove obs with out this info
   if (weight_approach == "inverse_sample_size"){
-    database<-subset (database, database$sample_size > 3)
-    database$mev<-1/(database$sample_size-3)
+    database$mev<-1/(database$sample_size)
     database$weight<-1/database$mev
     database$mesd<-sqrt(database$mev)
     return(database)
@@ -34,7 +33,7 @@ force.ultrametric<-function(tree, method=c("nnls","extend")){
   tree
 }
 
-mcmcglmm_dignostics<-function (modelo_fix, modelo_random, database, mev_col, gelman_diag="True", nitt_x= 13000, thin_x= 10 , 
+mcmcglmm_dignostics<-function (modelo_fix, modelo_random, database, mev_col = NULL, gelman_diag="True", nitt_x= 13000, thin_x= 10 , 
                                burnin_x= 3000, prior_x, save_output = "False", saving_path, file_name ){
   # Function to run one or several models 
   # gelman_diag == False will run only one model that will return the standar output of MCMCglmm 
@@ -44,11 +43,11 @@ mcmcglmm_dignostics<-function (modelo_fix, modelo_random, database, mev_col, gel
   # before saving 1 iteration.
   # burnin: period of iterations before start saving iterations using the algorith thin. burnin default = 3000
   # path_name_saving_file: for saving output as .RData Include the path or the file name using the extension .RData
-  
+  print (mev_col)
   # Running just one model 
   if (gelman_diag == "False"){
     m0.1<-MCMCglmm (as.formula(modelo_fix), random= as.formula (modelo_random), family = "gaussian", 
-                    data = database, verbose= T, mev = database[,mev_col],
+                    data = database, mev= mev_col , verbose= T,
                     nitt=nitt_x, thin=thin_x, burnin= burnin_x,pr=T,prior=prior_x)
     # to save data in .RData
     if (save_output == "True"){
@@ -62,15 +61,15 @@ mcmcglmm_dignostics<-function (modelo_fix, modelo_random, database, mev_col, gel
     # Running multiple models for gelman diagnostic
   } else {
     m0.1<-MCMCglmm (as.formula(modelo_fix), random= as.formula (modelo_random), family = "gaussian", 
-                    data = database, verbose= T, mev = database[,mev_col],
+                    data = database, mev= mev_col, verbose= T,
                     nitt=nitt_x, thin=thin_x, burnin= burnin_x,pr=T,prior=prior_x)
     
     m0.2<-MCMCglmm (as.formula(modelo_fix), random= as.formula (modelo_random), family = "gaussian", 
-                    data = database, verbose= T, mev = database[,mev_col],
+                    data = database, mev= mev_col , verbose= T,
                     nitt=nitt_x, thin=thin_x, burnin= burnin_x,pr=T,prior=prior_x)
     
     m0.3<-MCMCglmm (as.formula(modelo_fix), random= as.formula (modelo_random), family = "gaussian", 
-                    data = database, verbose= T, mev = database[,mev_col],
+                    data = database, mev= mev_col, verbose= T,
                     nitt=nitt_x, thin=thin_x, burnin= burnin_x,pr=T,prior=prior_x)
     
     gel.diag_SOL<-gelman.diag(list(m0.1$Sol[,1],m0.2$Sol[,1],m0.3$Sol[,1]))
