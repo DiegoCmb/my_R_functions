@@ -4,9 +4,9 @@ library (dplyr)
 
 weighting_and_subsetting <-
   function (database, weight_approach = 'inverse_sample_size') {
-    # to estimate the weights.
-    # sample_sizes below 3 are removed since the estimation of
-    # mev substract 3 from sample_sizes generating Inf outcomes
+    # Estimate the weights.
+    # remove NAs from sample sizes col and estimates weights 
+    # to be used in MCMCglmm
     database <-
       subset(database, database$sample_size != 'NA') # because we want to weight by sample sizes
     # we will have to remove obs with out this info
@@ -251,3 +251,62 @@ database_adjments_for_mcmc <- function(my_database, animal, my_tree) {
     )
   return (output)
 }
+
+
+# based on Scripts from Nakagawa and 
+# https://github.com/daniel1noble/metaAidR/blob/master/R/I2.R
+# estimating 
+# mev<-mev.all
+# W<-1/mev  # is this correct?????? this is the formula when is based on 
+# # measurment of variance, but I dont know if with sample sizes
+# # should follow the same logic. 
+# s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
+
+# heterogeneity for focal factor without considering phylogeny
+mm_I2.factor<-function (modelo_mm, focal_comp, mev){
+  W<- 1/mev
+  s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
+  estimado<-100*(modelo_mm$VCV[,focal_comp])/
+    (modelo_mm$VCV[,focal_comp]+modelo_mm$VCV[,"units"]+s2)
+  estimado2<-data.frame(posterior.mode(estimado))
+  names (estimado2)<-'heterogenity (I2)'
+  rownames(estimado2)<-paste('mm_I2', focal_comp, sep="." )
+  return (estimado2)
+}
+# heterogeneity for the same focal factor but considering phylogeny
+pm_I2.focal.phylo<-function (modelo_pm, focal_comp, mev){ 
+  W<- 1/mev
+  s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
+  estimado<-100*(modelo_pm$VCV[,focal_comp]+modelo_pm$VCV[,"animal"])/
+    (modelo_pm$VCV[, focal_comp]+modelo_pm$VCV[,"animal"]+
+       modelo_pm$VCV[,"units"]+s2)
+  estimado2<-data.frame(posterior.mode(estimado))
+  names(estimado2)<-"heterogenity (I2)"
+  rownames (estimado2)<-paste("pm_I2",focal_comp, sep= ".")
+  return (estimado2)
+}
+# heterogeneity due to phylogeny considering the factor
+pm_I2.phylo<-function (modelo_pm, focal_comp, mev){
+  W<- 1/mev
+  s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
+  estimado<-100*(modelo_pm$VCV[,"animal"])/
+    (modelo_pm$VCV[, focal_comp]+modelo_pm$VCV[,"animal"]+
+       modelo_pm$VCV[,"units"]+s2)
+  estimado2<-data.frame(posterior.mode(estimado))
+  names(estimado2)<-"heterogenity (I2)"
+  rownames (estimado2)<-paste("pm_I2.animal", focal_comp, sep= ".")
+  return (estimado2)
+}
+# Phylogenetic heredability, similar to lambda pagel
+pm_H2.phylo<-function (modelo_pm, focal_comp, mev){
+  estimado<-100*(modelo_pm$VCV[,"animal"])/
+    (modelo_pm$VCV[, focal_comp]+modelo_pm$VCV[,"animal"]+modelo_pm$VCV[,"units"])
+  estimado2<-data.frame(posterior.mode (estimado))
+  names (estimado2)<-"phylo heredability(h2)"
+  rownames (estimado2)<-paste ("pm_H2", focal_comp, sep=".")
+  return (estimado2)
+}
+
+
+
+
