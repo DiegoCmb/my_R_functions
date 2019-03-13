@@ -265,7 +265,7 @@ database_adjments_for_mcmc <- function(my_database, animal, my_tree) {
 # s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
 
 # heterogeneity for focal factor without considering phylogeny
-mm_I2.factor<-function (modelo_mm, random_random_focal_component, mev){
+mm_I2.factor<-function (modelo_mm, random_focal_component, mev){
   ##################### About heterogenity #####################################
   #
   # model_mm is an MCMCglmm object
