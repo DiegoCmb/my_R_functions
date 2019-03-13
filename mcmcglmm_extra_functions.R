@@ -253,6 +253,8 @@ database_adjments_for_mcmc <- function(my_database, animal, my_tree) {
 }
 
 
+
+########## Heterogeneity and phylogenetic heritability #####
 # based on Scripts from Nakagawa and 
 # https://github.com/daniel1noble/metaAidR/blob/master/R/I2.R
 # estimating 
@@ -264,6 +266,17 @@ database_adjments_for_mcmc <- function(my_database, animal, my_tree) {
 
 # heterogeneity for focal factor without considering phylogeny
 mm_I2.factor<-function (modelo_mm, focal_comp, mev){
+  ##################### About heterogenity #####################################
+  #
+  # The reliabilestimates ity of a general trend depnds on the degree of 
+  # consistency among studies (heterogeneity). 
+  # Two parameters Q and I2. Santos and Nakagawa 2012
+  # indicates that neither of both can be use in a multilevel meta-analysi
+  # but suggest a new I2 implementation that can be implemented in such models
+  # I2 = 25, 50, 75% are low, moderate and high heterogeneity respectively
+  # estimation I2specie level = variance.sp/ variance.total 
+  # or I2study = variance.study/variance.total
+  # variance_tot= var.phylo+var.study+var.sp+var.withinstudy+var.error
   W<- 1/mev
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
   estimado<-100*(modelo_mm$VCV[,focal_comp])/
@@ -275,6 +288,17 @@ mm_I2.factor<-function (modelo_mm, focal_comp, mev){
 }
 # heterogeneity for the same focal factor but considering phylogeny
 pm_I2.focal.phylo<-function (modelo_pm, focal_comp, mev){ 
+  ##################### About heterogenity #####################################
+  #
+  # The reliabilestimates ity of a general trend depnds on the degree of 
+  # consistency among studies (heterogeneity). 
+  # Two parameters Q and I2. Santos and Nakagawa 2012
+  # indicates that neither of both can be use in a multilevel meta-analysi
+  # but suggest a new I2 implementation that can be implemented in such models
+  # I2 = 25, 50, 75% are low, moderate and high heterogeneity respectively
+  # estimation I2specie level = variance.sp/ variance.total 
+  # or I2study = variance.study/variance.total
+  # variance_tot= var.phylo+var.study+var.sp+var.withinstudy+var.error
   W<- 1/mev
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
   estimado<-100*(modelo_pm$VCV[,focal_comp]+modelo_pm$VCV[,"animal"])/
@@ -287,6 +311,18 @@ pm_I2.focal.phylo<-function (modelo_pm, focal_comp, mev){
 }
 # heterogeneity due to phylogeny considering the factor
 pm_I2.phylo<-function (modelo_pm, focal_comp, mev){
+  ##################### About heterogenity #####################################
+  #
+  # The reliabilestimates ity of a general trend depnds on the degree of 
+  # consistency among studies (heterogeneity). 
+  # Two parameters Q and I2. Santos and Nakagawa 2012
+  # indicates that neither of both can be use in a multilevel meta-analysi
+  # but suggest a new I2 implementation that can be implemented in such models
+  # I2 = 25, 50, 75% are low, moderate and high heterogeneity respectively
+  # estimation I2specie level = variance.sp/ variance.total 
+  # or I2study = variance.study/variance.total
+  # variance_tot= var.phylo+var.study+var.sp+var.withinstudy+var.error
+  #####
   W<- 1/mev
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
   estimado<-100*(modelo_pm$VCV[,"animal"])/
@@ -297,8 +333,23 @@ pm_I2.phylo<-function (modelo_pm, focal_comp, mev){
   rownames (estimado2)<-paste("pm_I2.animal", focal_comp, sep= ".")
   return (estimado2)
 }
+
+
+
+
 # Phylogenetic heredability, similar to lambda pagel
 pm_H2.phylo<-function (modelo_pm, focal_comp, mev){
+  
+  ##################### About phylogenetic heritability ######################
+  # From estimating variance_tot it can be get the phylogenetic heritability
+  # that is another measurment indicating phylogenetic relatedness,
+  
+  # H2= var.phylo/variance_total
+  
+  # H2 = 0 no phylogenetic relatedness among effect sizes or traits, H2 = 1
+  # indicates that effect sizes or traits values among species are exactly 
+  # proportional to theri phylogenetic relatedness (Lynch 1991).
+  
   estimado<-100*(modelo_pm$VCV[,"animal"])/
     (modelo_pm$VCV[, focal_comp]+modelo_pm$VCV[,"animal"]+modelo_pm$VCV[,"units"])
   estimado2<-data.frame(posterior.mode (estimado))
@@ -306,6 +357,12 @@ pm_H2.phylo<-function (modelo_pm, focal_comp, mev){
   rownames (estimado2)<-paste ("pm_H2", focal_comp, sep=".")
   return (estimado2)
 }
+
+##################### About repeatitivity #####################################
+
+# NEED TO WORK ON THIS 
+
+#http://www.wildanimalmodels.org/tiki-download_wiki_attachment.php?attId=4
 
 
 
