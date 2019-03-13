@@ -265,9 +265,13 @@ database_adjments_for_mcmc <- function(my_database, animal, my_tree) {
 # s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
 
 # heterogeneity for focal factor without considering phylogeny
-mm_I2.factor<-function (modelo_mm, focal_comp, mev){
+mm_I2.factor<-function (modelo_mm, random_random_focal_component, mev){
   ##################### About heterogenity #####################################
   #
+  # model_mm is an MCMCglmm object
+  # random_focal_component: is the random component that is of interest
+  # mev: the component of within variation and it is associated to the database
+  # used to generate the MCMCglmm object (model)
   # The reliabilestimates ity of a general trend depnds on the degree of 
   # consistency among studies (heterogeneity). 
   # Two parameters Q and I2. Santos and Nakagawa 2012
@@ -277,19 +281,25 @@ mm_I2.factor<-function (modelo_mm, focal_comp, mev){
   # estimation I2specie level = variance.sp/ variance.total 
   # or I2study = variance.study/variance.total
   # variance_tot= var.phylo+var.study+var.sp+var.withinstudy+var.error
+  
+  model_name<- deparse(substitute (modelo_mm))
   W<- 1/mev
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
-  estimado<-100*(modelo_mm$VCV[,focal_comp])/
-    (modelo_mm$VCV[,focal_comp]+modelo_mm$VCV[,"units"]+s2)
-  estimado2<-data.frame(posterior.mode(estimado))
-  names (estimado2)<-'heterogenity (I2)'
-  rownames(estimado2)<-paste('mm_I2', focal_comp, sep="." )
+  estimado<-100*(modelo_mm$VCV[,random_focal_component])/
+    (modelo_mm$VCV[,random_focal_component]+modelo_mm$VCV[,"units"]+s2)
+  estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2' = posterior.mode(estimado))
+  rownames(estimado2)<-paste('mm_I2', focal_comp, sep="_" )
   return (estimado2)
 }
+
 # heterogeneity for the same focal factor but considering phylogeny
-pm_I2.focal.phylo<-function (modelo_pm, focal_comp, mev){ 
+pm_I2.focal.phylo<-function (modelo_pm, random_focal_component, mev){ 
   ##################### About heterogenity #####################################
   #
+  # model_mm is an MCMCglmm object
+  # random_focal_component: is the random component that is of interest
+  # mev: the component of within variation and it is associated to the database
+  # used to generate the MCMCglmm object (model)
   # The reliabilestimates ity of a general trend depnds on the degree of 
   # consistency among studies (heterogeneity). 
   # Two parameters Q and I2. Santos and Nakagawa 2012
@@ -299,18 +309,19 @@ pm_I2.focal.phylo<-function (modelo_pm, focal_comp, mev){
   # estimation I2specie level = variance.sp/ variance.total 
   # or I2study = variance.study/variance.total
   # variance_tot= var.phylo+var.study+var.sp+var.withinstudy+var.error
+  model_name<- deparse(substitute (modelo_pm))
   W<- 1/mev
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
-  estimado<-100*(modelo_pm$VCV[,focal_comp]+modelo_pm$VCV[,"animal"])/
-    (modelo_pm$VCV[, focal_comp]+modelo_pm$VCV[,"animal"]+
+  estimado<-100*(modelo_pm$VCV[,random_focal_component]+modelo_pm$VCV[,"animal"])/
+    (modelo_pm$VCV[, random_focal_component]+modelo_pm$VCV[,"animal"]+
        modelo_pm$VCV[,"units"]+s2)
-  estimado2<-data.frame(posterior.mode(estimado))
-  names(estimado2)<-"heterogenity (I2)"
-  rownames (estimado2)<-paste("pm_I2",focal_comp, sep= ".")
+  estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2' = posterior.mode(estimado))
+  rownames(estimado2)<-paste('pm_I2', focal_comp, sep="_" )
   return (estimado2)
 }
+
 # heterogeneity due to phylogeny considering the factor
-pm_I2.phylo<-function (modelo_pm, focal_comp, mev){
+pm_I2.phylo<-function (modelo_pm, random_focal_component, mev){
   ##################### About heterogenity #####################################
   #
   # The reliabilestimates ity of a general trend depnds on the degree of 
@@ -323,22 +334,20 @@ pm_I2.phylo<-function (modelo_pm, focal_comp, mev){
   # or I2study = variance.study/variance.total
   # variance_tot= var.phylo+var.study+var.sp+var.withinstudy+var.error
   #####
+  model_name<- deparse(substitute (modelo_pm))
   W<- 1/mev
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
   estimado<-100*(modelo_pm$VCV[,"animal"])/
-    (modelo_pm$VCV[, focal_comp]+modelo_pm$VCV[,"animal"]+
+    (modelo_pm$VCV[, random_focal_component]+modelo_pm$VCV[,"animal"]+
        modelo_pm$VCV[,"units"]+s2)
-  estimado2<-data.frame(posterior.mode(estimado))
-  names(estimado2)<-"heterogenity (I2)"
-  rownames (estimado2)<-paste("pm_I2.animal", focal_comp, sep= ".")
+  estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2' = posterior.mode(estimado))
+  rownames(estimado2)<-paste('pm_I2', focal_comp, sep="_" )
   return (estimado2)
 }
 
 
-
-
 # Phylogenetic heredability, similar to lambda pagel
-pm_H2.phylo<-function (modelo_pm, focal_comp, mev){
+pm_H2.phylo<-function (modelo_pm, random_focal_component, mev){
   
   ##################### About phylogenetic heritability ######################
   # From estimating variance_tot it can be get the phylogenetic heritability
@@ -349,14 +358,35 @@ pm_H2.phylo<-function (modelo_pm, focal_comp, mev){
   # H2 = 0 no phylogenetic relatedness among effect sizes or traits, H2 = 1
   # indicates that effect sizes or traits values among species are exactly 
   # proportional to theri phylogenetic relatedness (Lynch 1991).
-  
+  model_name<- deparse(substitute (modelo_pm))
   estimado<-100*(modelo_pm$VCV[,"animal"])/
-    (modelo_pm$VCV[, focal_comp]+modelo_pm$VCV[,"animal"]+modelo_pm$VCV[,"units"])
-  estimado2<-data.frame(posterior.mode (estimado))
-  names (estimado2)<-"phylo heredability(h2)"
-  rownames (estimado2)<-paste ("pm_H2", focal_comp, sep=".")
+    (modelo_pm$VCV[, random_focal_component]+modelo_pm$VCV[,"animal"]+modelo_pm$VCV[,"units"])
+  estimado2<-data.frame("model_name" = model_name, 'heredability_I2' = posterior.mode(estimado))
+  rownames(estimado2)<-paste('pm_I2', focal_comp, sep="_" )
   return (estimado2)
 }
+
+
+##################### Parsing functions
+library(devtools) # install.packages("devtools")
+library (broom.mixed) #install_github("bbolker/broom.mixed")
+
+row_summary_mcmcglmm<-function(mcmc_modelo_output){
+  # allow to generate a summary table from MCMCglmm by using broom.mixed
+  # needs to be feeded with the MCMCglmm model. 
+  model_name <-deparse(substitute(mcmc_modelo_output))
+  database1<-tidy(mcmc_modelo_output,  effects = "fixed", conf.int = TRUE,
+                  conf.level = 0.95, conf.method = "HPDinterval",  ess = TRUE )
+  lista_DIC<-list("DIC" = rep (mcmc_modelo_output$DIC, dim (database1)[1]))
+  lista_pMCMC<-list("pMCMC"= summary(mcmc_modelo_output)$solutions[,5])
+  models_names<-rep(model_name, dim(database1)[1])
+  # listaModels<-list ("model_name"= rep (model_name), dim(database1[1]))
+  # 
+  database2<-data.frame(models_names, database1, lista_pMCMC, lista_DIC)
+  rownames(database2) <- c()
+  return (database2)
+}
+
 
 ##################### About repeatitivity #####################################
 
