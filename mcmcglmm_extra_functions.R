@@ -371,7 +371,7 @@ pm_H2.phylo<-function (modelo_pm, random_focal_component, mev){
 library(devtools) # install.packages("devtools")
 library (broom.mixed) #install_github("bbolker/broom.mixed")
 
-row_summary_mcmcglmm<-function(mcmc_modelo_output){
+row_summary_mcmcglmm<-function(mcmc_modelo_output, moderator, extra_info){
   # allow to generate a summary table from MCMCglmm by using broom.mixed
   # needs to be feeded with the MCMCglmm model. 
   model_name <-deparse(substitute(mcmc_modelo_output))
@@ -380,9 +380,8 @@ row_summary_mcmcglmm<-function(mcmc_modelo_output){
   lista_DIC<-list("DIC" = rep (mcmc_modelo_output$DIC, dim (database1)[1]))
   lista_pMCMC<-list("pMCMC"= summary(mcmc_modelo_output)$solutions[,5])
   models_names<-rep(model_name, dim(database1)[1])
-  # listaModels<-list ("model_name"= rep (model_name), dim(database1[1]))
-  # 
-  database2<-data.frame(models_names, database1, lista_pMCMC, lista_DIC)
+  database2<-data.frame("moderator" = moderator, "extra_info"= extra_info, 
+                        models_names, database1, lista_pMCMC, lista_DIC)
   rownames(database2) <- c()
   return (database2)
 }
