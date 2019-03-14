@@ -445,7 +445,7 @@ complete_summary_mcmcglmm <-
 }
 
 # examples... 
-# a<-comlete_summary_mcmcglmm(mm_3_he_study_marker, "citation", dato.all$database$mev, analysis = "traditional")
+#a<-complete_summary_mcmcglmm(mm_3_he_study_marker, "citation", dato.all$database$mev, analysis = "traditional")
 # a
 # b<-comlete_summary_mcmcglmm(pm_4_he_study_marker, "citation", dato.all$database$mev, analysis = "phylogenetic")
 # b
