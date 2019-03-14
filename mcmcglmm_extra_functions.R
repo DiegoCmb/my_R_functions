@@ -425,7 +425,7 @@ row_summary_mcmcglmm<-function(mcmc_modelo_output, moderator, extra_info){
 
 #### Putting all the parsed information in one output
 
-comlete_summary_mcmcglmm <-
+complete_summary_mcmcglmm <-
   function (mcmc_modelo_output,
             moderator,
             mev,
