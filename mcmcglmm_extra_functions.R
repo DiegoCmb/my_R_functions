@@ -366,6 +366,43 @@ pm_H2.phylo<-function (modelo_pm, random_focal_component, mev){
   return (estimado2)
 }
 
+#### Final function that handle the estimation of I2 and H2 using the previous 
+# functions
+mcmc_I2_H2 <-
+  function(model_pm, moderator, mev, analysis = "traditional") {
+    # Administrate fungtions to get I2 and H2 from MCMCglmm objects
+    # with 1 random factor and the phylogenetic component of variation (animal)  
+    # if needed. Returns the output as row in a dataframe object
+    # it uses several functions  mm_I2_focal, pm_I2.focal.phylo, pm_I2.phylo
+    # pm_H2.phylo
+    
+    model_pm2 <- deparse(substitute(model_pm))
+    
+    if ("traditional" == analysis) {
+      mm_I2_focal <- mm_I2.factor(model_pm, moderator, mev)
+      dataframe1 <- data.frame("models_names" = model_pm2,
+                               "I2_moderator" = mm_I2_focal[2],
+                               "heterogenity_I2_phylo" = NA,
+                               "heredability_H2_phylo"= NA)
+      rownames(dataframe1) <- c()
+      return (dataframe1)
+    } else if ("phylogenetic" == analysis) {
+      pm_I2_focal_phylo <- pm_I2.focal.phylo (model_pm, moderator, mev)
+      pm_I2_phylo <- pm_I2.phylo(pm_2_he_study, "animal", mev)
+      pm_H2_phylo <- pm_H2.phylo(pm_2_he_study, moderator, mev)
+      
+      dataframe1 <- data.frame(
+        "models_names" = model_pm2,
+        "I2_moderator" = pm_I2_focal_phylo[2],
+        "I2_phylo" = pm_I2_phylo[2],
+        "H2_phylo" = pm_H2_phylo[2]
+      )
+      rownames(dataframe1) <- c()
+      return (dataframe1)
+    } else{
+      print ('Error: wrong name of analysis. Choose between traditional or phylogentic')
+    }
+  }
 
 ##################### Parsing functions
 library(devtools) # install.packages("devtools")
@@ -380,11 +417,38 @@ row_summary_mcmcglmm<-function(mcmc_modelo_output, moderator, extra_info){
   lista_DIC<-list("DIC" = rep (mcmc_modelo_output$DIC, dim (database1)[1]))
   lista_pMCMC<-list("pMCMC"= summary(mcmc_modelo_output)$solutions[,5])
   models_names<-rep(model_name, dim(database1)[1])
-  database2<-data.frame("moderator" = moderator, "extra_info"= extra_info, 
+  database2<-data.frame("moderator" = moderator, "model_type"= extra_info, 
                         models_names, database1, lista_pMCMC, lista_DIC)
   rownames(database2) <- c()
   return (database2)
 }
+
+#### Putting all the parsed information in one output
+
+comlete_summary_mcmcglmm <-
+  function (mcmc_modelo_output,
+            moderator,
+            mev,
+            analysis) {
+    
+  if (analysis == "traditional"){
+  trad<-mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "traditional")
+  database1<-row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
+  database2<- data.frame(database1, trad)
+  }else if (analysis == "phylogenetic"){
+    phylo<-mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "phylogenetic")
+    database1<-row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
+    database2<- data.frame(database1, phylo)
+  }else{
+    print ("Error. choose between traditional or phylogenetic")
+  }
+}
+
+# examples... 
+# a<-comlete_summary_mcmcglmm(mm_3_he_study_marker, "citation", dato.all$database$mev, analysis = "traditional")
+# a
+# b<-comlete_summary_mcmcglmm(pm_4_he_study_marker, "citation", dato.all$database$mev, analysis = "phylogenetic")
+# b
 
 
 ##################### About repeatitivity #####################################
