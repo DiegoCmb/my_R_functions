@@ -287,7 +287,7 @@ mm_I2.factor<-function (modelo_mm, random_focal_component, mev){
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
   estimado<-100*(modelo_mm$VCV[,random_focal_component])/
     (modelo_mm$VCV[,random_focal_component]+modelo_mm$VCV[,"units"]+s2)
-  estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2' = posterior.mode(estimado))
+  estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2_random_comp' = posterior.mode(estimado))
   rownames(estimado2)<-paste('mm_I2', random_focal_component, sep="_" )
   return (estimado2)
 }
@@ -315,7 +315,7 @@ pm_I2.focal.phylo<-function (modelo_pm, random_focal_component, mev){
   estimado<-100*(modelo_pm$VCV[,random_focal_component]+modelo_pm$VCV[,"animal"])/
     (modelo_pm$VCV[, random_focal_component]+modelo_pm$VCV[,"animal"]+
        modelo_pm$VCV[,"units"]+s2)
-  estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2' = posterior.mode(estimado))
+  estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2_random_comp' = posterior.mode(estimado))
   rownames(estimado2)<-paste('pm_I2', random_focal_component, sep="_" )
   return (estimado2)
 }
@@ -340,7 +340,7 @@ pm_I2.phylo<-function (modelo_pm, random_focal_component, mev){
   estimado<-100*(modelo_pm$VCV[,"animal"])/
     (modelo_pm$VCV[, random_focal_component]+modelo_pm$VCV[,"animal"]+
        modelo_pm$VCV[,"units"]+s2)
-  estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2' = posterior.mode(estimado))
+  estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2_phylo' = posterior.mode(estimado))
   rownames(estimado2)<-paste('pm_I2', random_focal_component, sep="_" )
   return (estimado2)
 }
@@ -361,7 +361,7 @@ pm_H2.phylo<-function (modelo_pm, random_focal_component, mev){
   model_name<- deparse(substitute (modelo_pm))
   estimado<-100*(modelo_pm$VCV[,"animal"])/
     (modelo_pm$VCV[, random_focal_component]+modelo_pm$VCV[,"animal"]+modelo_pm$VCV[,"units"])
-  estimado2<-data.frame("model_name" = model_name, 'heredability_I2' = posterior.mode(estimado))
+  estimado2<-data.frame("model_name" = model_name, 'heredability_H2_phylo' = posterior.mode(estimado))
   rownames(estimado2)<-paste('pm_I2', random_focal_component, sep="_" )
   return (estimado2)
 }
