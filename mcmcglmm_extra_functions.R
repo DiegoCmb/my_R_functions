@@ -369,17 +369,17 @@ pm_H2.phylo<-function (mcmc_modelo_output, random_focal_component, mev){
 #### Final function that handle the estimation of I2 and H2 using the previous 
 # functions
 mcmc_I2_H2 <-
-  function(model_pm, moderator, mev, analysis = "traditional") {
+  function(mcmc_modelo_output, moderator, mev, analysis = "traditional") {
     # Administrate fungtions to get I2 and H2 from MCMCglmm objects
     # with 1 random factor and the phylogenetic component of variation (animal)  
     # if needed. Returns the output as row in a dataframe object
     # it uses several functions  mm_I2_focal, pm_I2.focal.phylo, pm_I2.phylo
     # pm_H2.phylo
     
-    model_pm2 <- deparse(substitute(model_pm))
+    model_pm2 <- deparse(substitute(mcmc_modelo_output))
     
     if ("traditional" == analysis) {
-      mm_I2_focal <- mm_I2.factor(model_pm, moderator, mev)
+      mm_I2_focal <- mm_I2.factor(mcmc_modelo_output, moderator, mev)
       dataframe1 <- data.frame("models_names" = model_pm2,
                                "I2_moderator" = mm_I2_focal[2],
                                "heterogenity_I2_phylo" = NA,
@@ -387,7 +387,7 @@ mcmc_I2_H2 <-
       rownames(dataframe1) <- c()
       return (dataframe1)
     } else if ("phylogenetic" == analysis) {
-      pm_I2_focal_phylo <- pm_I2.focal.phylo (model_pm, moderator, mev)
+      pm_I2_focal_phylo <- pm_I2.focal.phylo (mcmc_modelo_output, moderator, mev)
       pm_I2_phylo <- pm_I2.phylo(pm_2_he_study, "animal", mev)
       pm_H2_phylo <- pm_H2.phylo(pm_2_he_study, moderator, mev)
       
