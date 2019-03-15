@@ -265,7 +265,7 @@ database_adjments_for_mcmc <- function(my_database, animal, my_tree) {
 # s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
 
 # heterogeneity for focal factor without considering phylogeny
-mm_I2.factor<-function (modelo_mm, random_focal_component, mev){
+mm_I2.factor<-function (mcmc_modelo_output, random_focal_component, mev){
   ##################### About heterogenity #####################################
   #
   # model_mm is an MCMCglmm object
@@ -282,18 +282,18 @@ mm_I2.factor<-function (modelo_mm, random_focal_component, mev){
   # or I2study = variance.study/variance.total
   # variance_tot= var.phylo+var.study+var.sp+var.withinstudy+var.error
   
-  model_name<- deparse(substitute (modelo_mm))
+  model_name<- deparse(substitute (mcmc_modelo_output))
   W<- 1/mev
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
-  estimado<-100*(modelo_mm$VCV[,random_focal_component])/
-    (modelo_mm$VCV[,random_focal_component]+modelo_mm$VCV[,"units"]+s2)
+  estimado<-100*(mcmc_modelo_output$VCV[,random_focal_component])/
+    (mcmc_modelo_output$VCV[,random_focal_component]+mcmc_modelo_output$VCV[,"units"]+s2)
   estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2_random_comp' = posterior.mode(estimado))
   rownames(estimado2)<-paste('mm_I2', random_focal_component, sep="_" )
   return (estimado2)
 }
 
 # heterogeneity for the same focal factor but considering phylogeny
-pm_I2.focal.phylo<-function (modelo_pm, random_focal_component, mev){ 
+pm_I2.focal.phylo<-function (mcmc_modelo_output, random_focal_component, mev){ 
   ##################### About heterogenity #####################################
   #
   # model_mm is an MCMCglmm object
@@ -309,19 +309,19 @@ pm_I2.focal.phylo<-function (modelo_pm, random_focal_component, mev){
   # estimation I2specie level = variance.sp/ variance.total 
   # or I2study = variance.study/variance.total
   # variance_tot= var.phylo+var.study+var.sp+var.withinstudy+var.error
-  model_name<- deparse(substitute (modelo_pm))
+  model_name<- deparse(substitute (mcmc_modelo_output))
   W<- 1/mev
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
-  estimado<-100*(modelo_pm$VCV[,random_focal_component]+modelo_pm$VCV[,"animal"])/
-    (modelo_pm$VCV[, random_focal_component]+modelo_pm$VCV[,"animal"]+
-       modelo_pm$VCV[,"units"]+s2)
+  estimado<-100*(mcmc_modelo_output$VCV[,random_focal_component]+mcmc_modelo_output$VCV[,"animal"])/
+    (mcmc_modelo_output$VCV[, random_focal_component]+mcmc_modelo_output$VCV[,"animal"]+
+       mcmc_modelo_output$VCV[,"units"]+s2)
   estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2_random_comp' = posterior.mode(estimado))
   rownames(estimado2)<-paste('pm_I2', random_focal_component, sep="_" )
   return (estimado2)
 }
 
 # heterogeneity due to phylogeny considering the factor
-pm_I2.phylo<-function (modelo_pm, random_focal_component, mev){
+pm_I2.phylo<-function (mcmc_modelo_output, random_focal_component, mev){
   ##################### About heterogenity #####################################
   #
   # The reliabilestimates ity of a general trend depnds on the degree of 
@@ -334,12 +334,12 @@ pm_I2.phylo<-function (modelo_pm, random_focal_component, mev){
   # or I2study = variance.study/variance.total
   # variance_tot= var.phylo+var.study+var.sp+var.withinstudy+var.error
   #####
-  model_name<- deparse(substitute (modelo_pm))
+  model_name<- deparse(substitute (mcmc_modelo_output))
   W<- 1/mev
   s2<-sum(W*(length(W)-1))/(sum(W)^2-sum(W^2)) # measurment of variance ()
-  estimado<-100*(modelo_pm$VCV[,"animal"])/
-    (modelo_pm$VCV[, random_focal_component]+modelo_pm$VCV[,"animal"]+
-       modelo_pm$VCV[,"units"]+s2)
+  estimado<-100*(mcmc_modelo_output$VCV[,"animal"])/
+    (mcmc_modelo_output$VCV[, random_focal_component]+mcmc_modelo_output$VCV[,"animal"]+
+       mcmc_modelo_output$VCV[,"units"]+s2)
   estimado2<-data.frame("model_name" = model_name, 'heterogenity_I2_phylo' = posterior.mode(estimado))
   rownames(estimado2)<-paste('pm_I2', random_focal_component, sep="_" )
   return (estimado2)
@@ -347,7 +347,7 @@ pm_I2.phylo<-function (modelo_pm, random_focal_component, mev){
 
 
 # Phylogenetic heredability, similar to lambda pagel
-pm_H2.phylo<-function (modelo_pm, random_focal_component, mev){
+pm_H2.phylo<-function (mcmc_modelo_output, random_focal_component, mev){
   
   ##################### About phylogenetic heritability ######################
   # From estimating variance_tot it can be get the phylogenetic heritability
@@ -358,9 +358,9 @@ pm_H2.phylo<-function (modelo_pm, random_focal_component, mev){
   # H2 = 0 no phylogenetic relatedness among effect sizes or traits, H2 = 1
   # indicates that effect sizes or traits values among species are exactly 
   # proportional to theri phylogenetic relatedness (Lynch 1991).
-  model_name<- deparse(substitute (modelo_pm))
-  estimado<-100*(modelo_pm$VCV[,"animal"])/
-    (modelo_pm$VCV[, random_focal_component]+modelo_pm$VCV[,"animal"]+modelo_pm$VCV[,"units"])
+  model_name<- deparse(substitute (mcmc_modelo_output))
+  estimado<-100*(mcmc_modelo_output$VCV[,"animal"])/
+    (mcmc_modelo_output$VCV[, random_focal_component]+mcmc_modelo_output$VCV[,"animal"]+mcmc_modelo_output$VCV[,"units"])
   estimado2<-data.frame("model_name" = model_name, 'heredability_H2_phylo' = posterior.mode(estimado))
   rownames(estimado2)<-paste('pm_I2', random_focal_component, sep="_" )
   return (estimado2)
@@ -412,6 +412,7 @@ row_summary_mcmcglmm<-function(mcmc_modelo_output, moderator, extra_info){
   # allow to generate a summary table from MCMCglmm by using broom.mixed
   # needs to be feeded with the MCMCglmm model. 
   model_name <-deparse(substitute(mcmc_modelo_output))
+  
   database1<-tidy(mcmc_modelo_output,  effects = "fixed", conf.int = TRUE,
                   conf.level = 0.95, conf.method = "HPDinterval",  ess = TRUE )
   lista_DIC<-list("DIC" = rep (mcmc_modelo_output$DIC, dim (database1)[1]))
@@ -425,28 +426,48 @@ row_summary_mcmcglmm<-function(mcmc_modelo_output, moderator, extra_info){
 
 #### Putting all the parsed information in one output
 
-complete_summary_mcmcglmm <-
+complete_summary_mcmcglmm2 <-
   function (mcmc_modelo_output,
             moderator,
             mev,
             analysis) {
-    
-  if (analysis == "traditional"){
-  trad<-mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "traditional")
-  database1<-row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
-  database2<- data.frame(database1, trad)
-  }else if (analysis == "phylogenetic"){
-    phylo<-mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "phylogenetic")
-    database1<-row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
-    database2<- data.frame(database1, phylo)
-  }else{
-    print ("Error. choose between traditional or phylogenetic")
+    model_name <- deparse(substitute(mcmc_modelo_output))
+    print (model_name)
+    if (analysis == "traditional") {
+      trad <-
+        mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "traditional")
+      database1 <-
+        row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
+      database1 <- database1[, -1]
+      database2 <- data.frame(database1, trad[-1])
+      
+      return (database2)
+    } else if (analysis == "phylogenetic") {
+      phylo <-
+        mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "phylogenetic")
+      database1 <-
+        row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
+      database2 <- data.frame(database1, phylo[-1])
+      return (database2)
+    } else if (analysis == "null") {
+      database1 <-
+        row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
+      database2 <-
+        data.frame(
+          database1,
+          "heterogenity_I2_random_comp" = NA,
+          "heterogenity_I2_phylo" = NA,
+          "heredability_H2_phylo" = NA
+        )
+      return (database2)
+    } else{
+      print ("Error. choose between traditional or phylogenetic")
+    }
   }
-}
 
 # examples... 
-#a<-complete_summary_mcmcglmm(mm_3_he_study_marker, "citation", dato.all$database$mev, analysis = "traditional")
-# a
+a<-complete_summary_mcmcglmm2(mm_3_he_study_marker, "citation", dato.all$database$mev, analysis = "traditional")
+a
 # b<-comlete_summary_mcmcglmm(pm_4_he_study_marker, "citation", dato.all$database$mev, analysis = "phylogenetic")
 # b
 
