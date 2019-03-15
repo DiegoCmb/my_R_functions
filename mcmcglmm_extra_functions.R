@@ -368,6 +368,7 @@ pm_H2.phylo<-function (mcmc_modelo_output, random_focal_component, mev){
 
 #### Final function that handle the estimation of I2 and H2 using the previous 
 # functions
+
 mcmc_I2_H2 <-
   function(mcmc_modelo_output, moderator, mev, analysis = "traditional") {
     # Administrate fungtions to get I2 and H2 from MCMCglmm objects
@@ -376,23 +377,26 @@ mcmc_I2_H2 <-
     # it uses several functions  mm_I2_focal, pm_I2.focal.phylo, pm_I2.phylo
     # pm_H2.phylo
     
-    model_pm2 <- deparse(substitute(mcmc_modelo_output))
+    model_name <- deparse(substitute(mcmc_modelo_output))
     
     if ("traditional" == analysis) {
+      
       mm_I2_focal <- mm_I2.factor(mcmc_modelo_output, moderator, mev)
-      dataframe1 <- data.frame("models_names" = model_pm2,
+      dataframe1 <- data.frame("models_names" = model_name,
                                "I2_moderator" = mm_I2_focal[2],
                                "heterogenity_I2_phylo" = NA,
                                "heredability_H2_phylo"= NA)
       rownames(dataframe1) <- c()
       return (dataframe1)
+      
     } else if ("phylogenetic" == analysis) {
+      
       pm_I2_focal_phylo <- pm_I2.focal.phylo (mcmc_modelo_output, moderator, mev)
-      pm_I2_phylo <- pm_I2.phylo(pm_2_he_study, "animal", mev)
-      pm_H2_phylo <- pm_H2.phylo(pm_2_he_study, moderator, mev)
+      pm_I2_phylo <- pm_I2.phylo(mcmc_modelo_output, "animal", mev)
+      pm_H2_phylo <- pm_H2.phylo(mcmc_modelo_output, moderator, mev)
       
       dataframe1 <- data.frame(
-        "models_names" = model_pm2,
+        "models_names" = model_name,
         "I2_moderator" = pm_I2_focal_phylo[2],
         "I2_phylo" = pm_I2_phylo[2],
         "H2_phylo" = pm_H2_phylo[2]
@@ -412,13 +416,12 @@ row_summary_mcmcglmm<-function(mcmc_modelo_output, moderator, extra_info){
   # allow to generate a summary table from MCMCglmm by using broom.mixed
   # needs to be feeded with the MCMCglmm model. 
   model_name <-deparse(substitute(mcmc_modelo_output))
-  
   database1<-tidy(mcmc_modelo_output,  effects = "fixed", conf.int = TRUE,
                   conf.level = 0.95, conf.method = "HPDinterval",  ess = TRUE )
   lista_DIC<-list("DIC" = rep (mcmc_modelo_output$DIC, dim (database1)[1]))
   lista_pMCMC<-list("pMCMC"= summary(mcmc_modelo_output)$solutions[,5])
   models_names<-rep(model_name, dim(database1)[1])
-  database2<-data.frame("moderator" = moderator, "model_type"= extra_info, 
+  database2<-data.frame("moderator" = moderator, "model_type" = extra_info, 
                         models_names, database1, lista_pMCMC, lista_DIC)
   rownames(database2) <- c()
   return (database2)
@@ -426,39 +429,41 @@ row_summary_mcmcglmm<-function(mcmc_modelo_output, moderator, extra_info){
 
 #### Putting all the parsed information in one output
 
-complete_summary_mcmcglmm2 <-
+complete_summary_mcmcglmm <-
   function (mcmc_modelo_output,
             moderator,
             mev,
             analysis) {
-    model_name <- deparse(substitute(mcmc_modelo_output))
-    print (model_name)
-    if (analysis == "traditional") {
+    model_names <-deparse(substitute(mcmc_modelo_output))
+    if (analysis == "traditional") { 
       trad <-
         mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "traditional")
       database1 <-
         row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
-      database1 <- database1[, -1]
-      database2 <- data.frame(database1, trad[-1])
+      database1 <- database1
+      database2 <- data.frame("model_name" = model_names, database1[-3], trad[-1])
       
       return (database2)
     } else if (analysis == "phylogenetic") {
+      
       phylo <-
         mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "phylogenetic")
       database1 <-
         row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
-      database2 <- data.frame(database1, phylo[-1])
+      database2 <- data.frame("model_name" = model_names, database1[-3], phylo[-1])
       return (database2)
+      
     } else if (analysis == "null") {
       database1 <-
         row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
       database2 <-
-        data.frame(
-          database1,
+        data.frame("model_name" = model_names,
+          database1[-3],
           "heterogenity_I2_random_comp" = NA,
           "heterogenity_I2_phylo" = NA,
           "heredability_H2_phylo" = NA
         )
+      
       return (database2)
     } else{
       print ("Error. choose between traditional or phylogenetic")
@@ -466,8 +471,8 @@ complete_summary_mcmcglmm2 <-
   }
 
 # examples... 
-a<-complete_summary_mcmcglmm2(mm_3_he_study_marker, "citation", dato.all$database$mev, analysis = "traditional")
-a
+# a<-complete_summary_mcmcglmm2(mm_3_he_study_marker, "citation", dato.all$database$mev, analysis = "traditional")
+# a
 # b<-comlete_summary_mcmcglmm(pm_4_he_study_marker, "citation", dato.all$database$mev, analysis = "phylogenetic")
 # b
 
