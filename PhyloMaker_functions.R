@@ -1,7 +1,7 @@
 library (phytools)
 library (RCurl)
 library (ape)
-library (purrr) # to map the list of the sp.list function.
+# library (purrr) # to map the list of the sp.list function.
 
 
 
@@ -22,14 +22,11 @@ eval(parse(text = S.PhyloMaker))
 
 ### Function to generate a list of species to be use with PhyloMaker
 sp.list<-function (Genus_species, Family){
-  
-  lista<-paste(Genus_species, Family, sep= "-") # Getting unquie species associated with their Family
-  lista<-unique (lista)
+  lista<-paste(Genus_species, Family, sep= "-")
   splista<-strsplit(lista, split = "-")
-  species<-unlist(map(splista, 1))              #flattening the list and getting the first obj from the nested list == Genus_sp
-  genus<-unlist(map (strsplit(species, split = "_"), 1)) # getting only the Genus name
-  family<-unlist(map(splista,2))              # getting only the family name
-  
+  species<-unlist(map(splista, 1))
+  genus<-unlist(map (strsplit(species, split = "_"), 1))
+  family<-unlist(map(splista,2))
   sp.list <-data.frame (species,genus, family)
 }
 
