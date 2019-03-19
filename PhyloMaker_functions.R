@@ -21,13 +21,13 @@ eval(parse(text = S.PhyloMaker))
 
 
 ### Function to generate a list of species to be use with PhyloMaker
-sp.list<-function (Genus_species, Family){
-  lista<-paste(Genus_species, Family, sep= "-")
-  splista<-strsplit(lista, split = "-")
-  species<-unlist(map(splista, 1))
-  genus<-unlist(map (strsplit(species, split = "_"), 1))
-  family<-unlist(map(splista,2))
-  sp.list <-data.frame (species,genus, family)
+sp.list <- function (Genus_species, Family) {
+  lista <- paste(Genus_species, Family, sep = "-")
+  splista <- strsplit(lista, split = "-")
+  species <- splista %>% map(1) %>% simplify(.)
+  genus <- strsplit(species, split = "_") %>% map(1) %>% simplify(.)
+  family <- splista %>% map(2) %>% simplify(.)
+  sp.list <- data.frame (species, genus, family)
 }
 
 
