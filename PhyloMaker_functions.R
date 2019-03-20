@@ -24,9 +24,9 @@ eval(parse(text = S.PhyloMaker))
 sp.list <- function (Genus_species, Family) {
   lista <- paste(Genus_species, Family, sep = "-")
   splista <- strsplit(lista, split = "-")
-  species <- splista %>% map(1) %>% simplify(.)
-  genus <- strsplit(species, split = "_") %>% map(1) %>% simplify(.)
-  family <- splista %>% map(2) %>% simplify(.)
+  species <- purrr::map(splista,1) %>% simplify(.)
+  genus <- purrr::map(strsplit(species, split = "_"),1)%>% simplify(.)
+  family <- purrr::map(splista, 2) %>% simplify(.)
   sp.list <- data.frame (species, genus, family)
 }
 
