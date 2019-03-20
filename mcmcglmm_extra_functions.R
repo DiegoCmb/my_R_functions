@@ -468,8 +468,7 @@ complete_summary_mcmcglmm <-
                                 database1[-3], phylo[-1])
         database3 <- database2%>% select(model_name, model_type, random_moderator, 
                                          fix_moderator, fix_levels_moderator, 
-                                         term:heredability_H2_phylo)%>%
-          rename(random_term= moderator)
+                                         term:heredability_H2_phylo)
         return (database3)
       }else if (fix_moderator == "NA") {
         my_levels<-fix_moderator
