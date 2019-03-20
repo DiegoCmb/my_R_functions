@@ -439,6 +439,7 @@ complete_summary_mcmcglmm <-
     print ("Col names to check if you have the right moderator name")
     print (names(my_database$database))
     model_names <-deparse(substitute(mcmc_modelo_output))
+    
     if (analysis == "traditional") { 
       my_levels<-sort(levels(droplevels(my_database$database[,fix_moderator])))
       trad <-                       # getting I2 and H2 estimations
@@ -455,6 +456,7 @@ complete_summary_mcmcglmm <-
                                        term:heredability_H2_phylo)
       
       return (database3)
+      
     } else if (analysis == "phylogenetic") {
       if (fix_moderator != "NA"){
         my_levels<-sort(levels(droplevels(my_database$database[,fix_moderator])))
@@ -470,6 +472,7 @@ complete_summary_mcmcglmm <-
                                          fix_moderator, fix_levels_moderator, 
                                          term:heredability_H2_phylo)
         return (database3)
+        
       }else if (fix_moderator == "NA") {
         my_levels<-fix_moderator
         phylo <-                        # getting I2 and H2 estimations
@@ -484,6 +487,7 @@ complete_summary_mcmcglmm <-
                                          fix_moderator, fix_levels_moderator, 
                                          term:heredability_H2_phylo)
         return (database3)
+        
       }
       
     } else if (analysis == "null") {
