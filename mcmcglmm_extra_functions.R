@@ -436,9 +436,9 @@ complete_summary_mcmcglmm <-
             my_database,
             analysis) {
     mev<-my_database$database$mev
+    print ("Col names to check if you have the right moderator name")
     print (names(my_database$database))
     model_names <-deparse(substitute(mcmc_modelo_output))
-    
     if (analysis == "traditional") { 
       my_levels<-sort(levels(droplevels(my_database$database[,fix_moderator])))
       trad <-                       # getting I2 and H2 estimations
@@ -449,10 +449,10 @@ complete_summary_mcmcglmm <-
                               "fix_moderator" = fix_moderator,
                               "fix_levels_moderator" = my_levels, 
                               database1[-3], trad[-1])
-      database3 <- database2%>% select(model_name, model_type, moderator, 
+      print (database2)
+      database3 <- database2%>% select(model_name, model_type, random_moderator, 
                                        fix_moderator, fix_levels_moderator, 
-                                       term:heredability_H2_phylo)%>%
-        rename(random_term= moderator)
+                                       term:heredability_H2_phylo)
       
       return (database3)
     } else if (analysis == "phylogenetic") {
@@ -466,7 +466,7 @@ complete_summary_mcmcglmm <-
                                 "fix_moderator" = fix_moderator,
                                 "fix_levels_moderator" = my_levels,
                                 database1[-3], phylo[-1])
-        database3 <- database2%>% select(model_name, model_type, moderator, 
+        database3 <- database2%>% select(model_name, model_type, random_moderator, 
                                          fix_moderator, fix_levels_moderator, 
                                          term:heredability_H2_phylo)%>%
           rename(random_term= moderator)
@@ -481,10 +481,9 @@ complete_summary_mcmcglmm <-
                                 "fix_moderator" = fix_moderator,
                                 "fix_levels_moderator" = my_levels,
                                 database1[-3], phylo[-1])
-        database3 <- database2%>% select(model_name, model_type, moderator, 
+        database3 <- database2%>% select(model_name, model_type, random_moderator,
                                          fix_moderator, fix_levels_moderator, 
-                                         term:heredability_H2_phylo)%>%
-          rename(random_term= moderator)
+                                         term:heredability_H2_phylo)
         return (database3)
       }
       
@@ -500,16 +499,16 @@ complete_summary_mcmcglmm <-
                    "heterogenity_I2_random_comp" = NA,
                    "heterogenity_I2_phylo" = NA,
                    "heredability_H2_phylo" = NA)
-      database3 <- database2%>% select(model_name, model_type, moderator, 
+      database3 <- database2%>% select(model_name, model_type, random_moderator,
                                        fix_moderator, fix_levels_moderator, 
-                                       term:heredability_H2_phylo)%>%
-        rename(random_term= moderator)
+                                       term:heredability_H2_phylo)
       
       return (database3)
     } else{
       print ("Error. choose between traditional or phylogenetic")
     }
   }
+
 
 
 
