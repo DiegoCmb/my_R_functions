@@ -421,7 +421,7 @@ row_summary_mcmcglmm<-function(mcmc_modelo_output, moderator, extra_info){
   lista_DIC<-list("DIC" = rep (mcmc_modelo_output$DIC, dim (database1)[1]))
   lista_pMCMC<-list("pMCMC"= summary(mcmc_modelo_output)$solutions[,5])
   models_names<-rep(model_name, dim(database1)[1])
-  database2<-data.frame("moderator" = moderator, "model_type" = extra_info, 
+  database2<-data.frame("random_moderator" = moderator, "model_type" = extra_info, 
                         models_names, database1, lista_pMCMC, lista_DIC)
   rownames(database2) <- c()
   return (database2)
@@ -431,44 +431,93 @@ row_summary_mcmcglmm<-function(mcmc_modelo_output, moderator, extra_info){
 
 complete_summary_mcmcglmm <-
   function (mcmc_modelo_output,
-            moderator,
-            mev,
+            fix_moderator,
+            random_moderator,
+            my_database,
             analysis) {
+    mev<-my_database$database$mev
+    print (names(my_database$database))
     model_names <-deparse(substitute(mcmc_modelo_output))
+    
     if (analysis == "traditional") { 
-      trad <-
-        mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "traditional")
-      database1 <-
-        row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
-      database1 <- database1
-      database2 <- data.frame("model_name" = model_names, database1[-3], trad[-1])
+      my_levels<-sort(levels(droplevels(my_database$database[,fix_moderator])))
+      trad <-                       # getting I2 and H2 estimations
+        mcmc_I2_H2(mcmc_modelo_output, random_moderator, mev, analysis = "traditional")
+      database1 <-                  # getting general summary  output form MCMCglmm
+        row_summary_mcmcglmm(mcmc_modelo_output, random_moderator, analysis)
+      database2 <- data.frame("model_name" = model_names, 
+                              "fix_moderator" = fix_moderator,
+                              "fix_levels_moderator" = my_levels, 
+                              database1[-3], trad[-1])
+      database3 <- database2%>% select(model_name, model_type, moderator, 
+                                       fix_moderator, fix_levels_moderator, 
+                                       term:heredability_H2_phylo)%>%
+        rename(random_term= moderator)
       
-      return (database2)
+      return (database3)
     } else if (analysis == "phylogenetic") {
-      
-      phylo <-
-        mcmc_I2_H2(mcmc_modelo_output, moderator, mev, analysis = "phylogenetic")
-      database1 <-
-        row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
-      database2 <- data.frame("model_name" = model_names, database1[-3], phylo[-1])
-      return (database2)
+      if (fix_moderator != "NA"){
+        my_levels<-sort(levels(droplevels(my_database$database[,fix_moderator])))
+        phylo <-                        # getting I2 and H2 estimations
+          mcmc_I2_H2(mcmc_modelo_output, random_moderator, mev, analysis = "phylogenetic")
+        database1 <-                    # getting general summary  output form MCMCglmm 
+          row_summary_mcmcglmm(mcmc_modelo_output, random_moderator, analysis)
+        database2 <- data.frame("model_name" = model_names, 
+                                "fix_moderator" = fix_moderator,
+                                "fix_levels_moderator" = my_levels,
+                                database1[-3], phylo[-1])
+        database3 <- database2%>% select(model_name, model_type, moderator, 
+                                         fix_moderator, fix_levels_moderator, 
+                                         term:heredability_H2_phylo)%>%
+          rename(random_term= moderator)
+        return (database3)
+      }else if (fix_moderator == "NA") {
+        my_levels<-fix_moderator
+        phylo <-                        # getting I2 and H2 estimations
+          mcmc_I2_H2(mcmc_modelo_output, random_moderator, mev, analysis = "phylogenetic")
+        database1 <-                    # getting general summary  output form MCMCglmm 
+          row_summary_mcmcglmm(mcmc_modelo_output, random_moderator, analysis)
+        database2 <- data.frame("model_name" = model_names, 
+                                "fix_moderator" = fix_moderator,
+                                "fix_levels_moderator" = my_levels,
+                                database1[-3], phylo[-1])
+        database3 <- database2%>% select(model_name, model_type, moderator, 
+                                         fix_moderator, fix_levels_moderator, 
+                                         term:heredability_H2_phylo)%>%
+          rename(random_term= moderator)
+        return (database3)
+      }
       
     } else if (analysis == "null") {
-      database1 <-
-        row_summary_mcmcglmm(mcmc_modelo_output, moderator, analysis)
-      database2 <-
+      my_levels<-fix_moderator
+      database1 <-                          # getting summary output
+        row_summary_mcmcglmm(mcmc_modelo_output, random_moderator, analysis)
+      database2 <-                          # creating rows in database
         data.frame("model_name" = model_names,
-          database1[-3],
-          "heterogenity_I2_random_comp" = NA,
-          "heterogenity_I2_phylo" = NA,
-          "heredability_H2_phylo" = NA
-        )
+                   "fix_moderator" = fix_moderator,
+                   "fix_levels_moderator" = my_levels ,
+                   database1[-3],
+                   "heterogenity_I2_random_comp" = NA,
+                   "heterogenity_I2_phylo" = NA,
+                   "heredability_H2_phylo" = NA)
+      database3 <- database2%>% select(model_name, model_type, moderator, 
+                                       fix_moderator, fix_levels_moderator, 
+                                       term:heredability_H2_phylo)%>%
+        rename(random_term= moderator)
       
-      return (database2)
+      return (database3)
     } else{
       print ("Error. choose between traditional or phylogenetic")
     }
   }
+
+
+
+
+
+
+
+
 
 # examples... 
 # a<-complete_summary_mcmcglmm2(mm_3_he_study_marker, "citation", dato.all$database$mev, analysis = "traditional")
